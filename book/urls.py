@@ -1,8 +1,8 @@
 
 from django.urls import path
-from . import views
+from book import views
 
 urlpatterns = [
-    path('list/', views.home),
-    path('listes/', views.home),
+    path('list/', views.BookViewSet.as_view({'get': 'list', 'post': 'post'})),
+    path('list_categorie/', views.CategorieViewSet.as_view({'get': 'list', 'post': 'post'})),
 ]
