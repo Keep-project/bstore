@@ -323,7 +323,7 @@ class TelechargeListViewSet(viewsets.ViewSet):
     def list(self, request, id_book=None, *args, **kwargs):
         telecharge = Telecharge.objects.all()
         serializer = TelechargeSerializer(telecharge, many=True)
-        return Response({'success': True,'status': status.HTTP_200_OK, 'message':'Liste des télécharge', 'télécharge': serializer.data}, status=status.HTTP_200_OK)
+        return Response({'success': True,'status': status.HTTP_200_OK, 'message':'Liste des téléchargements', 'telecharges': serializer.data}, status=status.HTTP_200_OK)
 
 class TelechargeCreateViewSet(viewsets.ViewSet):
 
