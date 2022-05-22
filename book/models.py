@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 BASE_URL = 'http://127.0.0.1:8000'
 
 class Utilisateur(User):
-    avartar=models.FileField(upload_to='avatar/', blank=False, null=False)
+    avatar=models.FileField(upload_to='avatar/', blank=False, null=False)
 
     def __str__(self):
         return "{0}".format(self.username)
@@ -18,14 +18,11 @@ class Utilisateur(User):
     def get_avatar_url(self):
         return BASE_URL + self.avatar.url
 
-
 class Categorie(models.Model):
     libelle= models.CharField(max_length=50)
 
     def __str__(self):
         return "{0}".format(self.libelle)
-
-
 
 class Books(models.Model):
     titre= models.CharField(max_length=255, null=False)
@@ -52,14 +49,16 @@ class Books(models.Model):
     def get_image_url(self):
         return BASE_URL + self.image.url
 
-
-
-
-
+class Like(models.Model):
+    utilisateur=models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    book=models.ForeignKey(Books, on_delete=models.CASCADE)
+    is_like= models.BooleanField(default=False)
+    created_at =models.DateTimeField(auto_now_add=True)
+    updated_at =models.DateTimeField(auto_now=True)
 
 class Commentaire(models.Model):
     utilisateur=models.ForeignKey(Utilisateur,  on_delete=models.CASCADE)
-    books=models.ForeignKey(Books, related_name='commmentaires',on_delete=models.CASCADE)
+    book=models.ForeignKey(Books, related_name='commmentaires',on_delete=models.CASCADE)
     contenu= models.CharField(max_length=255)
     created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
@@ -74,36 +73,21 @@ class Commentaire(models.Model):
     def get_absolute_url(self):
         return  "/{0}/".format(self.contenu)    
 
-
 class Partage(models.Model):
     utilisateur=models.ForeignKey(Utilisateur,  on_delete=models.CASCADE)
-    books=models.ForeignKey(Books,on_delete=models.CASCADE)
+    book=models.ForeignKey(Books,on_delete=models.CASCADE)
     created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering=('-created_at',)
-
     
-
-class Telechargement(models.Model):
+class Telecharge(models.Model):
     utilisateur=models.ForeignKey(Utilisateur, related_name='telechargements',  on_delete=models.CASCADE)
-    books=models.ForeignKey(Books, related_name="livres", on_delete=models.CASCADE)
+    book=models.ForeignKey(Books, related_name="livres", on_delete=models.CASCADE)
     created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering=('-created_at',)
-
-
-class Likes(models.Model):
-    utilisateur=models.ForeignKey(Utilisateur,  on_delete=models.CASCADE)
-    books=models.ForeignKey(Books, on_delete=models.CASCADE)
-    created_at =models.DateTimeField(auto_now_add=True)
-    updated_at =models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering=('-created_at',)
-   
-
 
