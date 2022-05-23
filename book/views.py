@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
+import json
 
 # Importation des models
 from .models import Books, Categorie, Utilisateur, Commentaire, \
@@ -16,6 +17,7 @@ from .serializers import BooksSerializer, CategorieSerializer, \
     TelechargeSerializer, LikeSerializer
 
 # Create your views here.
+
 
 
 class CategorieViewSet(viewsets.ViewSet):
@@ -90,11 +92,11 @@ class CategorieDetailViewSet(viewsets.ViewSet):
 
 
 class BookViewSet(viewsets.ViewSet):
-
     def list(self, request, *args, **kwargs):
+        permission_classes = [IsAuthenticated]
         books = Books.objects.all()
         serializer = BooksSerializer(books, many=True)
-        return Response({'status': status.HTTP_200_OK, 'success': True, 'message': 'Liste des livres','books': serializer.data,},status=status.HTTP_200_OK,)
+        return Response({'status': status.HTTP_200_OK, 'success': True, 'message': 'Liste des livres','liste de permissions': str([permission() for permission in permission_classes]),'books': serializer.data, },status=status.HTTP_200_OK,)
 
     def post(self, request, *args, **kwargs):
 
@@ -236,12 +238,12 @@ class UtilisateurDetailViewSet(viewsets.ViewSet):
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "L'utilisateur ayant l'id = {0} n'existe pas !".format(id)}, status=status.HTTP_404_NOT_FOUND)
 
 
-
-class CommentaireListViewSet(viewsets.ViewSet):
-    def list(self, request, id_book=None, *args, **kwargs):
-        commentaire = Commentaire.objects.all()
-        serializer = CommentaireSerializer(commentaire, many=True)
-        return Response({'success': True,'status': status.HTTP_200_OK, 'message':'Liste des commentaires', 'commentaires': serializer.data}, status=status.HTTP_200_OK)
+class CommentaireListViewSet(viewsets.GenericViewSet):
+    def list(self, request, *args, **kwargs):
+        commentaires = Commentaire.objects.all()
+        page = self.paginate_queryset(commentaires)
+        serializer = CommentaireSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 class CommentaireCreateViewSet(viewsets.ViewSet):
 
@@ -262,7 +264,7 @@ class CommentaireCreateViewSet(viewsets.ViewSet):
 
 class PartageListViewSet(viewsets.ViewSet):
 
-    def list(self, request, id_book=None, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         partage = Partage.objects.all()
         serializer = PartageSerializer(partage, many=True)
         return Response({'success': True,'status': status.HTTP_200_OK, 'message':'Liste des partages', 'partage': serializer.data}, status=status.HTTP_200_OK)
@@ -286,8 +288,7 @@ class PartageCreateViewSet(viewsets.ViewSet):
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Vous ne pouvez partager un livre inconnu !"}, status=status.HTTP_404_NOT_FOUND)
 
 class LikesListViewSet(viewsets.ViewSet):
-
-    def list(self, request, id_book=None, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         like = Like.objects.all()
         serializer = LikeSerializer(like, many=True)
         return Response({'success': True,'status': status.HTTP_200_OK, 'message':'Liste des likes', 'like': serializer.data}, status=status.HTTP_200_OK)
@@ -320,7 +321,7 @@ class LikesCreateViewSet(viewsets.ViewSet):
 
 
 class TelechargeListViewSet(viewsets.ViewSet):
-    def list(self, request, id_book=None, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         telecharge = Telecharge.objects.all()
         serializer = TelechargeSerializer(telecharge, many=True)
         return Response({'success': True,'status': status.HTTP_200_OK, 'message':'Liste des téléchargements', 'telecharges': serializer.data}, status=status.HTTP_200_OK)
