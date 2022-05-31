@@ -12,6 +12,7 @@ class BooksSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'titre',
+            'proprietaire',
             'description',
             'nbpages',
             'get_image_url',
@@ -23,16 +24,24 @@ class BooksSerializer(serializers.ModelSerializer):
         )
 
 
+
 class CategorieSerializer(serializers.ModelSerializer):
-    livres = BooksSerializer(many=True, read_only=True)
     class Meta:
         model = Categorie
         fields = [
             'id',
             'libelle',
-            'livres',
         ]
 
+class CategorieDetailSerializer(serializers.ModelSerializer):
+    books = BooksSerializer(many=True, read_only=True)
+    class Meta:
+        model = Categorie
+        fields = [
+            'id',
+            'libelle',
+            'books',
+        ]
 
 class UtilisateurSerializer(serializers.ModelSerializer):
     
@@ -74,6 +83,23 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
+class BooksDetailSerializer(serializers.ModelSerializer):
+    # books = UtilisateurSerializer(read_only=True)
+    class Meta:
+        model = Books
+        fields = (
+            'id',
+            'titre',
+            'description',
+            'nbpages',
+            'get_image_url',
+            'langue',
+            'auteur',
+            'editeur',
+            'proprietaire',
+            'created_at',
+            'updated_at',
+        )
 class CommentaireSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -99,7 +125,6 @@ class PartageSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
-
 class LikeSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -112,7 +137,6 @@ class LikeSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-
 
 class TelechargeSerializer(serializers.ModelSerializer):
 

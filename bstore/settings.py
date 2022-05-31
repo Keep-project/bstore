@@ -26,7 +26,9 @@ SECRET_KEY = 'django-insecure-+!%sf0u-$^&9os#llxn@f-1gtjii)7t&i58g#y#@*ipi7-1%oa
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [ '127.0.0.1', "0.0.0.0"]
+# ALLOWED_HOSTS = [ '127.0.0.1', "0.0.0.0"]
+ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', '192.168.100.104', '192.168.43.60','192.168.220.1'] 
+
 
 
 # Application definition
@@ -41,14 +43,16 @@ INSTALLED_APPS = [
 
 
     'corsheaders',
-    'rest_framework',
     'djoser',
+    'rest_framework',
 
     # Mes applications
     'book'
 ]
 
-# CORS_ALLOWED_ALL_ORIGINS =True
+CORS_ALLOW_ORIGINS = [
+    "http://192.168.220.1:8000"
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -158,12 +162,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
+    # ),
+
     "DEFAULT_PERMISSION_CLASSES": [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-        # 'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination'

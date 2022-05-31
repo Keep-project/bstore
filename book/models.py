@@ -1,3 +1,4 @@
+from re import T
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -7,16 +8,20 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 
-BASE_URL = 'http://127.0.0.1:8000'
+BASE_URL = 'http://192.168.220.1:8000'
 
 class Utilisateur(User):
-    avatar=models.FileField(upload_to='avatar/', blank=False, null=False)
+    avatar=models.FileField(upload_to='avatar/', blank=True, null=True)
 
     def __str__(self):
         return "{0}".format(self.username)
     
     def get_avatar_url(self):
-        return BASE_URL + self.avatar.url
+        
+        if self.avatar:
+            return  BASE_URL + self.avatar.url
+        
+        return BASE_URL + "/media/avatar/photo_2022-05-13_16-56-12_d9wjxh1.jpg"
 
 class Categorie(models.Model):
     libelle= models.CharField(max_length=50)
@@ -29,6 +34,7 @@ class Books(models.Model):
     description= models.CharField(max_length=255)
     nbpages= models.IntegerField(null=False, blank=False)
     image= models.FileField(upload_to='couverture/', blank=False, null=False)
+    proprietaire = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, null=True, blank=True)
     langue= models.CharField(max_length=10)
     auteur= models.CharField(max_length=50)
     editeur= models.CharField(max_length=50)
