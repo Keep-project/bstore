@@ -3,7 +3,8 @@
 
 from rest_framework.response import Response
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q
 import math
 import django
@@ -22,26 +23,11 @@ from .serializers import BooksSerializer, CategorieSerializer, \
 # Create your views here.
 
 
-from django.shortcuts import render, get_object_or_404
 
-from rest_framework.viewsets import ModelViewSet
 from .paginations import CustomPagination
 # Create your views here.
 
 BASE_URL = 'http://127.0.0.1:8000'
-class BooksdViewSet(ModelViewSet):
-    serializer_class = BooksSerializer
-    pagination_class = CustomPagination
-
-    def get_object(self):
-        return get_object_or_404(Books, id=self.request.query_params.get("id"))
-
-    def get_queryset(self):
-        return Books.objects.filter(proprietaire=self.request.user.id)
-
-    # def perform_destroy(self, instance):
-    #     instance.is_active = False
-    #     instance.save()
 
 
 class CategorieViewSet(viewsets.ViewSet):
@@ -129,6 +115,9 @@ class BookListForUserViewSet(viewsets.GenericViewSet):
         })
         
 class BookViewSet(viewsets.GenericViewSet):
+    authentication_classes = [JWTAuthentication]
+
+
     def list(self, request, *args, **kwargs):
         books = Books.objects.all()
         page = self.paginate_queryset(books)
@@ -137,6 +126,7 @@ class BookViewSet(viewsets.GenericViewSet):
         
     def post(self, request, *args, **kwargs):
         request.data['image'] = ""
+        print(request.user)
         request.data['proprietaire'] = Utilisateur.objects.get(id=request.user.id)
         serializer = BooksSerializer(data=request.data)
         categorie = Categorie.objects.get(id=request.data.get('categorie'))
@@ -154,7 +144,7 @@ class BookViewSet(viewsets.GenericViewSet):
             )
             livre.save()
             serializer = BooksSerializer(livre)
-            return Response({'status': status.HTTP_201_CREATED, 'success': False, 'messages': 'Livre créé avec succès','livre': serializer.data}, status=status.HTTP_200_OK)
+            return Response({'status': status.HTTP_201_CREATED, 'success': False, 'message': 'Livre créé avec succès','results': serializer.data}, status=status.HTTP_200_OK)
         return Response({'status': status.HTTP_400_BAD_REQUEST, 'data': serializer.error }, status=status.HTTP_400_BAD_REQUEST)
 
 class BookDetailViewSet(viewsets.ViewSet):
@@ -190,7 +180,7 @@ class BookDetailViewSet(viewsets.ViewSet):
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Le livre ayant l'id = {0} n'existe pas !".format(id)}, status=status.HTTP_404_NOT_FOUND)
 
 class UtilisateurViewSet(viewsets.ViewSet):   
-    # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
     def list(self, request, *args, **kwargs):
         utilisateurs = Utilisateur.objects.all()
         serializer = UtilisateurSerializer(utilisateurs, many=True)
@@ -198,8 +188,6 @@ class UtilisateurViewSet(viewsets.ViewSet):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        # data['avatar'] = ""
-        # serializer = UtilisateurSerializer(data=data)
         if ((len(data.get('username')) >= 4) and (len(data.get('password')) >= 8)):
             try:
                 user = Utilisateur.objects.create_user(
