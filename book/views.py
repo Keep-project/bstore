@@ -129,6 +129,7 @@ class BookViewSet(viewsets.GenericViewSet):
         serializer = BooksSerializer(data=request.data)
         categorie = Categorie.objects.get(id=request.data.get('categorie'))
         if serializer.is_valid():
+            
             livre = Books(
                 titre= request.data.get('titre'),
                 description= request.data.get('description'),
