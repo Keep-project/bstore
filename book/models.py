@@ -30,15 +30,18 @@ class Categorie(models.Model):
         return "{0}".format(self.libelle)
 
 class Books(models.Model):
+    
     titre= models.CharField(max_length=255, null=False)
     description= models.CharField(max_length=255)
     nbpages= models.IntegerField(null=False, blank=False)
     image= models.FileField(upload_to='couverture/', blank=False, null=False)
+    fichier = models.FileField(upload_to='documents/', blank=True)
     proprietaire = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, null=True, blank=True)
     langue= models.CharField(max_length=10)
     auteur= models.CharField(max_length=50)
     editeur= models.CharField(max_length=50)
     categorie=models.ForeignKey(Categorie, related_name="books", on_delete=models.CASCADE)
+    datepub= models.DateTimeField(null=True)
     created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
 
@@ -53,7 +56,18 @@ class Books(models.Model):
         return  "/{0}/".format(self.titre)
     
     def get_image_url(self):
-        return BASE_URL + self.image.url
+
+        if self.image:
+            return  BASE_URL + self.image.url
+        
+        return BASE_URL + "/media/avatar/femme-de-pouvoir.jpg"
+    
+    def get_fichier_url(self):
+
+        if self.fichier:
+            return  BASE_URL + self.fichier.url
+        
+        return BASE_URL + "/media/documents/photo_2022-04-28_07-10-57.jpg"
 
 class Like(models.Model):
     utilisateur=models.ForeignKey(Utilisateur, on_delete=models.CASCADE)

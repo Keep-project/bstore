@@ -8,6 +8,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q
 import math
 import django
+import datetime
 
 # Importation des models
 from .models import Books, Categorie, Utilisateur, Commentaire, \
@@ -117,7 +118,6 @@ class BookListForUserViewSet(viewsets.GenericViewSet):
 class BookViewSet(viewsets.GenericViewSet):
     authentication_classes = [JWTAuthentication]
 
-
     def list(self, request, *args, **kwargs):
         books = Books.objects.all()
         page = self.paginate_queryset(books)
@@ -125,8 +125,6 @@ class BookViewSet(viewsets.GenericViewSet):
         return self.get_paginated_response(serializer.data)
         
     def post(self, request, *args, **kwargs):
-        request.data['image'] = ""
-        print(request.user)
         request.data['proprietaire'] = Utilisateur.objects.get(id=request.user.id)
         serializer = BooksSerializer(data=request.data)
         categorie = Categorie.objects.get(id=request.data.get('categorie'))
@@ -140,11 +138,14 @@ class BookViewSet(viewsets.GenericViewSet):
                 image= request.FILES.get('image'),
                 auteur= request.data.get('auteur'),
                 editeur= request.data.get('editeur'),
-                categorie = categorie
+                categorie = categorie,
+                fichier= request.data.get("fichier"),
+                datepub=  datetime.datetime.strptime(request.data.get('datepub'), '%Y-%m-%d %H:%M:%S.%f')
+
             )
             livre.save()
             serializer = BooksSerializer(livre)
-            return Response({'status': status.HTTP_201_CREATED, 'success': False, 'message': 'Livre créé avec succès','results': serializer.data}, status=status.HTTP_200_OK)
+            return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre créé avec succès','results': serializer.data}, status=status.HTTP_200_OK)
         return Response({'status': status.HTTP_400_BAD_REQUEST, 'data': serializer.error }, status=status.HTTP_400_BAD_REQUEST)
 
 class BookDetailViewSet(viewsets.ViewSet):
