@@ -43,7 +43,7 @@ class CategorieViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(request.data, status=status.HTTP_200_OK)
-        return Response({'status': status.HTTP_400_BAD_REQUEST, 'data': serializer.error }, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': status.HTTP_400_BAD_REQUEST, 'data': serializer.errors }, status=status.HTTP_400_BAD_REQUEST)
 
 class CategorieDetailViewSet(viewsets.ViewSet):
 
@@ -129,7 +129,6 @@ class BookViewSet(viewsets.GenericViewSet):
         serializer = BooksSerializer(data=request.data)
         categorie = Categorie.objects.get(id=request.data.get('categorie'))
         if serializer.is_valid():
-            
             livre = Books(
                 titre= request.data.get('titre'),
                 description= request.data.get('description'),
@@ -141,13 +140,13 @@ class BookViewSet(viewsets.GenericViewSet):
                 editeur= request.data.get('editeur'),
                 categorie = categorie,
                 fichier= request.data.get("fichier"),
-                datepub=  datetime.datetime.strptime(request.data.get('datepub'), '%Y-%m-%d %H:%M:%S.%f')
+                datepub=  datetime.datetime.strptime(request.data.get('datepub'), '%Y-%m-%d %H:%M:%S.%f') if request.data.get('datepub') else datetime.datetime.now()
 
             )
             livre.save()
             serializer = BooksSerializer(livre)
             return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre créé avec succès','results': serializer.data}, status=status.HTTP_200_OK)
-        return Response({'status': status.HTTP_400_BAD_REQUEST, 'data': serializer.error }, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': status.HTTP_400_BAD_REQUEST, 'results': serializer.errors }, status=status.HTTP_400_BAD_REQUEST)
 
 class BookDetailViewSet(viewsets.ViewSet):
    
@@ -258,7 +257,7 @@ class CommentaireCreateViewSet(viewsets.ViewSet):
             if serializer.is_valid():
                 serializer.save()
                 return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Commentaire enrégistré avec succès', 'commentaire': serializer.data}, status=status.HTTP_201_CREATED)
-            return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur de création du commentaire. Paramètres incomplèts !'} ,status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur de création du commentaire. Paramètres incomplèts !', 'results': serializer.errors} ,status=status.HTTP_400_BAD_REQUEST)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Vous ne pouvez faire un commentaire sur un livre inconnu !"}, status=status.HTTP_404_NOT_FOUND)
 
 class PartageListViewSet(viewsets.ViewSet):
@@ -277,8 +276,8 @@ class PartageCreateViewSet(viewsets.ViewSet):
             serializer = PartageSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Partage enrégistré avec succès', 'partage': serializer.data}, status=status.HTTP_201_CREATED)
-            return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur lors du partage. Paramètres incomplèts !'} ,status=status.HTTP_400_BAD_REQUEST)
+                return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Partage enrégistré avec succès', 'results': serializer.data}, status=status.HTTP_201_CREATED)
+            return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur lors du partage. Paramètres incomplèts !', 'results': serializer.errors} ,status=status.HTTP_400_BAD_REQUEST)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Vous ne pouvez partager un livre inconnu !"}, status=status.HTTP_404_NOT_FOUND)
 
 class LikesListViewSet(viewsets.ViewSet):
@@ -306,7 +305,7 @@ class LikesCreateViewSet(viewsets.ViewSet):
             if serializer.is_valid():
                 serializer.save()
                 return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre liker avec succès', 'like': serializer.data}, status=status.HTTP_201_CREATED)
-            return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': "Le livre avec l'id = {0} n'existe pas !".format(id_book)} ,status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': "Le livre avec l'id = {0} n'existe pas !".format(id_book), 'results': serializer.errors} ,status=status.HTTP_400_BAD_REQUEST)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Vous ne pouvez liker/disliker un livre inconnu !"}, status=status.HTTP_404_NOT_FOUND)
 
 class TelechargeListViewSet(viewsets.ViewSet):
@@ -325,7 +324,7 @@ class TelechargeCreateViewSet(viewsets.ViewSet):
             if serializer.is_valid():
                 serializer.save()
                 return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre téléchargé avec succès', 'telecharge': serializer.data}, status=status.HTTP_201_CREATED)
-            return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur lors du téléchargement. Paramètres incomplèts !'} ,status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur lors du téléchargement. Paramètres incomplèts !', 'results': serializer.errors} ,status=status.HTTP_400_BAD_REQUEST)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Vous ne pouvez télécharger un livre inconnu !"}, status=status.HTTP_404_NOT_FOUND)
 
 
