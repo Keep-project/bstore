@@ -1,3 +1,4 @@
+from distutils import extension
 from re import T
 from django.db import models
 from django.contrib.auth.models import User
@@ -32,9 +33,10 @@ class Categorie(models.Model):
 class Books(models.Model):
     
     titre= models.CharField(max_length=255, null=False)
-    description= models.CharField(max_length=255)
+    description= models.TextField()
     nbpages= models.IntegerField(null=False, blank=False)
     image= models.FileField(upload_to='couverture/', blank=False, null=False)
+    extension= models.CharField(max_length=50, default='pdf',)
     fichier = models.FileField(upload_to='documents/', blank=True)
     proprietaire = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, null=True, blank=True)
     langue= models.CharField(max_length=10)
@@ -44,7 +46,6 @@ class Books(models.Model):
     datepub= models.DateTimeField(null=True)
     created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
-
 
     class Meta:
         ordering=('-created_at',)
@@ -68,6 +69,21 @@ class Books(models.Model):
             return  BASE_URL + self.fichier.url
         
         return BASE_URL + "/media/documents/photo_2022-04-28_07-10-57.jpg"
+    
+    def likes(self):
+        # return Like.objects.filter(book__id=self.id).count()
+        # return self.nblikes.filter(book=self.id).count()
+        return self.like_set.filter(book=self.id).count()
+
+    def nbcommentaires(self):
+        return self.commentaire_set.filter(book=self.id).count()
+
+
+    def commentaires(self):
+        return self.commentaire_set.filter(book=self.id)
+
+    def telecharges(self):
+        return self.telecharge_set.filter(book=self.id).count()
 
 class Like(models.Model):
     utilisateur=models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
@@ -78,7 +94,7 @@ class Like(models.Model):
 
 class Commentaire(models.Model):
     utilisateur=models.ForeignKey(Utilisateur,  on_delete=models.CASCADE)
-    book=models.ForeignKey(Books, related_name='commmentaires',on_delete=models.CASCADE)
+    book=models.ForeignKey(Books, on_delete=models.CASCADE)
     contenu= models.CharField(max_length=255)
     created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
@@ -104,7 +120,7 @@ class Partage(models.Model):
     
 class Telecharge(models.Model):
     utilisateur=models.ForeignKey(Utilisateur, related_name='telechargements',  on_delete=models.CASCADE)
-    book=models.ForeignKey(Books, related_name="livres", on_delete=models.CASCADE)
+    book=models.ForeignKey(Books, on_delete=models.CASCADE)
     created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
 

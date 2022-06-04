@@ -6,7 +6,36 @@ from django.contrib.auth.models import User
 from .models import Books, Categorie, Utilisateur, \
     Commentaire, Partage, Telecharge, Like
 
+
+class LikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Like
+        fields = [
+            'id',
+            'utilisateur',
+            'book',
+            'is_like',
+            'created_at',
+            'updated_at',
+        ]
+
+
+class CommentaireSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Commentaire
+        fields = [
+            'id',
+            'utilisateur',
+            'contenu',
+            'created_at',
+            'updated_at',
+        ]
+
 class BooksSerializer(serializers.ModelSerializer):
+
+    # likes = LikeSerializer(many=True, read_only=True)
     class Meta:
         model = Books
         fields = (
@@ -17,6 +46,8 @@ class BooksSerializer(serializers.ModelSerializer):
             'nbpages',
             'get_image_url',
             'get_fichier_url',
+            'likes',
+            'nbcommentaires',
             'langue',
             'auteur',
             'editeur',
@@ -87,6 +118,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class BooksDetailSerializer(serializers.ModelSerializer):
     # books = UtilisateurSerializer(read_only=True)
+    commentaires = CommentaireSerializer(many=True, read_only=True)
     class Meta:
         model = Books
         fields = (
@@ -94,27 +126,22 @@ class BooksDetailSerializer(serializers.ModelSerializer):
             'titre',
             'description',
             'nbpages',
+            'extension',
             'get_image_url',
-            'fichier',
+            'get_fichier_url',
             'langue',
+            'likes',
+            'telecharges',
+            'commentaires',
             'auteur',
             'editeur',
             'proprietaire',
+            'datepub',
             'created_at',
             'updated_at',
         )
-class CommentaireSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = Commentaire
-        fields = [
-            'id',
-            'utilisateur',
-            'book',
-            'contenu',
-            'created_at',
-            'updated_at',
-        ]
+
 
 class PartageSerializer(serializers.ModelSerializer):
 
@@ -124,19 +151,6 @@ class PartageSerializer(serializers.ModelSerializer):
             'id',
             'utilisateur',
             'book',
-            'created_at',
-            'updated_at',
-        ]
-
-class LikeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Like
-        fields = [
-            'id',
-            'utilisateur',
-            'book',
-            'is_like',
             'created_at',
             'updated_at',
         ]
