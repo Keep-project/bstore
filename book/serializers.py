@@ -6,9 +6,7 @@ from django.contrib.auth.models import User
 from .models import Books, Categorie, Utilisateur, \
     Commentaire, Partage, Telecharge, Like
 
-
 class LikeSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Like
         fields = [
@@ -16,10 +14,7 @@ class LikeSerializer(serializers.ModelSerializer):
             'utilisateur',
             'book',
             'is_like',
-            'created_at',
-            'updated_at',
         ]
-
 
 class CommentaireSerializer(serializers.ModelSerializer):
 
@@ -55,8 +50,6 @@ class BooksSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         )
-
-
 
 class CategorieSerializer(serializers.ModelSerializer):
     class Meta:
@@ -95,7 +88,6 @@ class UtilisateurSerializer(serializers.ModelSerializer):
             'user_permissions',
         ]
 
-
 class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -114,7 +106,6 @@ class UserSerializer(serializers.ModelSerializer):
             'date_joined',
             'user_permissions',
         ]
-
 
 class BooksDetailSerializer(serializers.ModelSerializer):
     # books = UtilisateurSerializer(read_only=True)
@@ -140,8 +131,6 @@ class BooksDetailSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         )
-
-
 
 class PartageSerializer(serializers.ModelSerializer):
 

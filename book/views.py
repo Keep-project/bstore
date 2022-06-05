@@ -33,7 +33,7 @@ BASE_URL = 'http://127.0.0.1:8000'
 
 
 class CategorieViewSet(viewsets.ViewSet):
-
+    authentication_classes = [JWTAuthentication]
     def list(self, request, *args, **kwargs):
         categorie = Categorie.objects.all()
         serializer = CategorieSerializer(categorie, many=True)
@@ -43,11 +43,11 @@ class CategorieViewSet(viewsets.ViewSet):
         serializer = CategorieSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(request.data, status=status.HTTP_200_OK)
+            return Response({'success': True, 'status': status.HTTP_200_OK, 'message': 'Catégorie créée avec succès', 'results': serializer.data}, status=status.HTTP_200_OK)
         return Response({'status': status.HTTP_400_BAD_REQUEST, 'data': serializer.errors }, status=status.HTTP_400_BAD_REQUEST)
 
 class CategorieDetailViewSet(viewsets.ViewSet):
-
+    authentication_classes = [JWTAuthentication]
     #  Methode permettant de trouver une catégorie à partir de son Id
     def get_object(self, id):
         try:
@@ -170,7 +170,6 @@ class BookDetailViewSet(viewsets.ViewSet):
             is_like = self.get_user_like(id, request.user.id)
             data = serializer.data
             data["is_like"] = True if is_like else False
-            print(is_like)
             return Response({'success': True, 'status': status.HTTP_200_OK, "message": "Détail du livre", 'results': data })
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Le livre ayant l'id = {0} n'existe pas !".format(id)}, status=status.HTTP_404_NOT_FOUND)    
 
@@ -279,7 +278,7 @@ class PartageListViewSet(viewsets.ViewSet):
         return Response({'success': True,'status': status.HTTP_200_OK, 'message':'Liste des partages', 'results': serializer.data}, status=status.HTTP_200_OK)
 
 class PartageCreateViewSet(viewsets.ViewSet):
-
+    authentication_classes = [JWTAuthentication]
     def post(self, request, id_book=None, *args, **kwargs):
         if id_book != None:
             request.data['book'] = int(id_book)
