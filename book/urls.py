@@ -18,7 +18,8 @@ urlpatterns = [
     re_path(r'^utilisateur/(?P<id>\d+)/', views.UtilisateurDetailViewSet.as_view({'get': 'retrieve', 'post': 'put', 'put': 'put', 'delete': 'delete'}), name='detail_user'),
 
     # liste des livres d'un utilisateurs
-    re_path(r'^utilisateur/me/$', views.BookListForUserViewSet.as_view({'get': 'list',}), name='book_list_user'),
+    path('utilisateur/me/', views.BookListForUserViewSet.as_view({'get': 'list',}), name='book_list_user'),
+    re_path(r'^filter/$', views.FilterBookViewSet.as_view({'get': 'list',}), name='book_filter_list'),
 
 
     # Commentaires

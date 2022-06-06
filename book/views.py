@@ -84,7 +84,7 @@ class CategorieDetailViewSet(viewsets.ViewSet):
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "La catégorie ayant l'id = {0} n'existe pas !".format(id)}, status=status.HTTP_404_NOT_FOUND)
 
 class BookListForUserViewSet(viewsets.GenericViewSet):
-
+    authentication_classes = [JWTAuthentication]
     def list(self, request, *args, **kwargs):
         books = Books.objects.filter(proprietaire=request.user.id)   
         page = int(request.GET.get('page', 1))
@@ -113,7 +113,24 @@ class BookListForUserViewSet(viewsets.GenericViewSet):
             'previous': previous,
             "results": serializer.data,
         })
-        
+
+
+class FilterBookViewSet(viewsets.GenericViewSet):
+
+    def list(self, request, *args, **kwargs):
+        query = request.GET.get('query')
+        books = Books.objects.filter( 
+            Q(titre__icontains = query) |
+            Q(description__icontains = query) |
+            Q(auteur__icontains = query) |
+            Q(editeur__icontains = query) |
+            Q(categorie__libelle__icontains = query) 
+        )
+        page = self.paginate_queryset(books)
+        serializer = BooksSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+
+
 class BookViewSet(viewsets.GenericViewSet):
     authentication_classes = [JWTAuthentication]
 
