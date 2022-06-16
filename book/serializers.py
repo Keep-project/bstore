@@ -70,7 +70,6 @@ class CategorieDetailSerializer(serializers.ModelSerializer):
         ]
 
 class UtilisateurSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = Utilisateur
         fields = [
@@ -88,27 +87,31 @@ class UtilisateurSerializer(serializers.ModelSerializer):
             'user_permissions',
         ]
 
-class UserSerializer(serializers.ModelSerializer):
-    
+class UtilisateurDetailsSerializer(serializers.ModelSerializer):
+    get_liked_books = BooksSerializer(many=True, read_only=True)
+    get_downloads_books = BooksSerializer(many=True, read_only=True)
+    get_uploads_books = BooksSerializer(many=True, read_only=True)
     class Meta:
-        model = User
+        model = Utilisateur
         fields = [
             'id',
             'username',
             'first_name',
             'last_name',
+            'get_avatar_url',
             'email',
-            'password',
             'is_staff',
             'is_active',
             'last_login',
             'is_superuser',
             'date_joined',
             'user_permissions',
+            'get_liked_books',
+            'get_downloads_books',
+            'get_uploads_books'
         ]
 
 class BooksDetailSerializer(serializers.ModelSerializer):
-    # books = UtilisateurSerializer(read_only=True)
     commentaires = CommentaireSerializer(many=True, read_only=True)
     class Meta:
         model = Books

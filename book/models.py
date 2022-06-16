@@ -1,6 +1,7 @@
 from distutils import extension
 from re import T
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
 
 # from io import BytesIO
@@ -18,17 +19,31 @@ class Utilisateur(User):
         return "{0}".format(self.username)
     
     def get_avatar_url(self):
-        
         if self.avatar:
             return  BASE_URL + self.avatar.url
-        
         return BASE_URL + "/media/avatar/photo_2022-05-13_16-56-12_d9wjxh1.jpg"
+
+
+    def get_liked_books(self):
+        likes = Like.objects.filter(utilisateur = self.id)
+        ids = [like.book_id for like in likes]
+        return Books.objects.filter(id__in=ids)
+    
+    def get_downloads_books(self):
+        downloads = Telecharge.objects.filter(utilisateur = self.id)
+        ids = [download.book_id for download in downloads]
+        return Books.objects.filter(id__in=ids)
+
+    def get_uploads_books(self):
+        return Books.objects.filter(proprietaire__id = self.id)
+
 
 class Categorie(models.Model):
     libelle= models.CharField(max_length=50)
 
     def __str__(self):
         return "{0}".format(self.libelle)
+
 
 class Books(models.Model):
     
