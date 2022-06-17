@@ -18,7 +18,7 @@ from .models import Books, Categorie, Utilisateur, Commentaire, \
 from .serializers import BooksSerializer, CategorieSerializer, \
     UtilisateurSerializer, CommentaireSerializer, PartageSerializer, \
     TelechargeSerializer, LikeSerializer, CategorieDetailSerializer, \
-        BooksDetailSerializer, UtilisateurDetailsSerializer
+        BooksDetailSerializer, UtilisateurDetailsSerializer, UtilisateurDetailsSerializer
 
 
 
@@ -129,7 +129,6 @@ class FilterBookViewSet(viewsets.GenericViewSet):
         serializer = BooksSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
-
 class BookViewSet(viewsets.GenericViewSet):
     authentication_classes = [JWTAuthentication]
 
@@ -233,6 +232,13 @@ class UtilisateurViewSet(viewsets.ViewSet):
             return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Utilisateur enrégistré avec succès', 'results': serializer.data}, status=status.HTTP_201_CREATED)
 
         return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur de création de l\'utilisateur. Paramètres incomplèts !',} ,status=status.HTTP_400_BAD_REQUEST)
+
+class UserInfo(viewsets.ViewSet):
+    authentication_classes = [JWTAuthentication]
+    def list(self, request, *args, **kwargs):
+        user = Utilisateur.objects.get(id=self.request.user.id)
+        serializer = UtilisateurDetailsSerializer(user)
+        return Response({'status': status.HTTP_200_OK, 'message': 'Information de l\'utilisateur', 'results': serializer.data}, status=status.HTTP_200_OK)
 
 class UtilisateurDetailViewSet(viewsets.ViewSet):
 

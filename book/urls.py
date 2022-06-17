@@ -14,7 +14,8 @@ urlpatterns = [
     re_path(r'^categorie/(?P<id>\d+)$', views.CategorieDetailViewSet.as_view({'get': 'retrieve', 'put': 'put', 'post': 'put', 'delete': 'delete'}), name="detail_categorie"),
 
     # Utilisateurs
-    path('utilisateur/', views.UtilisateurViewSet.as_view({'get': 'list', 'post': 'post'}), name='list_users'),
+    re_path(r'^utilisateur/$', views.UtilisateurViewSet.as_view({'get': 'list', 'post': 'post'}), name='list_users'),
+    re_path(r'^utilisateur/info/$', views.UserInfo.as_view({'get': 'list',}), name='user_info'),
     re_path(r'^utilisateur/(?P<id>\d+)/', views.UtilisateurDetailViewSet.as_view({'get': 'retrieve', 'post': 'put', 'put': 'put', 'delete': 'delete'}), name='detail_user'),
 
     # liste des livres d'un utilisateurs
