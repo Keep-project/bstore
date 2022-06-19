@@ -8,6 +8,8 @@ urlpatterns = [
     re_path(r'^$', views.BookViewSet.as_view({'get': 'list', 'post': 'post'}), name='list_book'),
     re_path(r'^(?P<id>\d+)$', views.BookDetailViewSet.as_view({'get': 'retrieve', 'put': 'put', 'post': 'put', 'delete': 'delete'}), name="detail_livre"),
 
+    # Livre populaires
+    path('populars/', views.PopularBooksViewSet.as_view({'get': 'list'}), name='popular_books'),
 
     # Catégories
     path('categorie/', views.CategorieViewSet.as_view({'get': 'list', 'post': 'post'}), name="list_categorie"),
@@ -39,7 +41,7 @@ urlpatterns = [
 
     # Téléchargements
     path('telecharge/', views.TelechargeListViewSet.as_view({'get': 'list'}), name='list_telecharge'),
-    re_path(r'^(?P<id_book>\d+)/telecharge/$', views.TelechargeCreateViewSet.as_view({'post': 'post'}), name='create_telecharge'),
+    re_path(r'^(?P<id_book>\d+)/telecharge/$', views.TelechargeCreateViewSet.as_view({'post': 'post', 'delete': 'delete'}), name='create_telecharge'),
 
 
 

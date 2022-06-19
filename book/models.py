@@ -1,5 +1,4 @@
-from distutils import extension
-from re import T
+
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -30,8 +29,19 @@ class Utilisateur(User):
         return Books.objects.filter(id__in=ids)
     
     def get_downloads_books(self):
-        downloads = Telecharge.objects.filter(utilisateur = self.id)
+        # downloads = Telecharge.objects.filter(utilisateur__id = self.id)
+        downloads = Telecharge.objects.filter(utilisateur__id = self.id)
         ids = [download.book_id for download in downloads]
+        liste = [(download.book_id, download.utilisateur_id) for download in downloads]
+        print("================================")
+        telecharges = Telecharge.objects.all()
+        # print("L'id du user {0}".format(self.id))
+        # print(len(ids))
+        # print(ids)
+        print(liste)
+        print(len(liste))
+        print("Tous les télachargements sont au nombre: {0}".format(telecharges.count()))
+        print("================================")
         return Books.objects.filter(id__in=ids)
 
     def get_uploads_books(self):
@@ -100,12 +110,19 @@ class Books(models.Model):
     def telecharges(self):
         return self.telecharge_set.filter(book=self.id).count()
 
+    def get_categorie(self):
+        return self.categorie.libelle
+
 class Like(models.Model):
     utilisateur=models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     book=models.ForeignKey(Books, on_delete=models.CASCADE)
     is_like= models.BooleanField(default=False)
     created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
+
+
+    # def get_nombre(self):
+    #     return self.
 
 class Commentaire(models.Model):
     utilisateur=models.ForeignKey(Utilisateur,  on_delete=models.CASCADE)
