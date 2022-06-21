@@ -7,6 +7,7 @@ urlpatterns = [
     # livres
     re_path(r'^$', views.BookViewSet.as_view({'get': 'list', 'post': 'post'}), name='list_book'),
     re_path(r'^(?P<id>\d+)$', views.BookDetailViewSet.as_view({'get': 'retrieve', 'put': 'put', 'post': 'put', 'delete': 'delete'}), name="detail_livre"),
+    re_path(r'^similars/$', views.SimalarBooksViewSet.as_view({'get': 'list'}), name='list_book'),
 
     # Livre populaires
     path('populars/', views.PopularBooksViewSet.as_view({'get': 'list'}), name='popular_books'),

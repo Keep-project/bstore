@@ -29,19 +29,8 @@ class Utilisateur(User):
         return Books.objects.filter(id__in=ids)
     
     def get_downloads_books(self):
-        # downloads = Telecharge.objects.filter(utilisateur__id = self.id)
         downloads = Telecharge.objects.filter(utilisateur__id = self.id)
         ids = [download.book_id for download in downloads]
-        liste = [(download.book_id, download.utilisateur_id) for download in downloads]
-        print("================================")
-        telecharges = Telecharge.objects.all()
-        # print("L'id du user {0}".format(self.id))
-        # print(len(ids))
-        # print(ids)
-        print(liste)
-        print(len(liste))
-        print("Tous les télachargements sont au nombre: {0}".format(telecharges.count()))
-        print("================================")
         return Books.objects.filter(id__in=ids)
 
     def get_uploads_books(self):
@@ -82,17 +71,13 @@ class Books(models.Model):
         return  "/{0}/".format(self.titre)
     
     def get_image_url(self):
-
         if self.image:
             return  BASE_URL + self.image.url
-        
-        return BASE_URL + "/media/avatar/femme-de-pouvoir.jpg"
+        return BASE_URL + "/media/couverture/bstore-logo.png"
     
     def get_fichier_url(self):
-
         if self.fichier:
             return  BASE_URL + self.fichier.url
-        
         return BASE_URL + "/media/documents/photo_2022-04-28_07-10-57.jpg"
     
     def likes(self):

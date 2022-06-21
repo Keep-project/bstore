@@ -129,6 +129,16 @@ class FilterBookViewSet(viewsets.GenericViewSet):
         serializer = BooksSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
+class SimalarBooksViewSet(viewsets.ViewSet):
+    def list(self, request, *args, **kwargs):
+        query = request.GET.get('query')
+        author = request.GET.get('author')
+        books = Books.objects.filter(
+            Q(auteur__icontains = author) |
+            Q(categorie__libelle__icontains = query) 
+        )[ 0: 30]
+        serializer = BooksSerializer(books, many=True)
+        return Response({ 'success': True, 'status': status.HTTP_200_OK, 'message': 'Livres similaires', 'results': serializer.data}, status=status.HTTP_200_OK)
 
 class PopularBooksViewSet(viewsets.ViewSet):
     def list(self, request, *args, **kwargs):
@@ -250,7 +260,7 @@ class UserInfo(viewsets.ViewSet):
         return Response({'status': status.HTTP_200_OK, 'message': 'Information de l\'utilisateur', 'results': serializer.data}, status=status.HTTP_200_OK)
 
 class UtilisateurDetailViewSet(viewsets.ViewSet):
-
+    permission_classes = [AllowAny]
     def get_object(self, id):
         try:
             return Utilisateur.objects.get(id = id)
@@ -338,14 +348,16 @@ class LikesCreateViewSet(viewsets.ViewSet):
                 if old_like.is_like:
                     like = Like.objects.get(id=old_like.id)
                     like.delete()
-                    return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre disliker avec succès', 'results': new_like}, status=status.HTTP_201_CREATED)
+                    bs = BooksDetailSerializer(Books.objects.get(id=id_book))
+                    return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre disliker avec succès', 'is_like': False, 'results': bs.data}, status=status.HTTP_201_CREATED)
             except Like.DoesNotExist:
                 new_like = { 'utilisateur': request.user.id, 'book': id_book, 'is_like': True}
                 serializer = LikeSerializer(data=new_like)
 
             if serializer.is_valid():
                 serializer.save()
-                return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre liker avec succès', 'results': serializer.data}, status=status.HTTP_201_CREATED)
+                bs = BooksDetailSerializer(Books.objects.get(id=id_book))
+                return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre liker avec succès','is_like': True, 'results': bs.data}, status=status.HTTP_201_CREATED)
             return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': "Le livre avec l'id = {0} n'existe pas !".format(id_book), 'results': serializer.errors} ,status=status.HTTP_400_BAD_REQUEST)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Vous ne pouvez liker/disliker un livre inconnu !"}, status=status.HTTP_404_NOT_FOUND)
 
