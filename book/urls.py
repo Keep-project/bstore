@@ -7,14 +7,18 @@ urlpatterns = [
     # livres
     re_path(r'^$', views.BookViewSet.as_view({'get': 'list', 'post': 'post'}), name='list_book'),
     re_path(r'^(?P<id>\d+)$', views.BookDetailViewSet.as_view({'get': 'retrieve', 'put': 'put', 'post': 'put', 'delete': 'delete'}), name="detail_livre"),
+    re_path(r'^similars/$', views.SimalarBooksViewSet.as_view({'get': 'list'}), name='list_book'),
 
+    # Livre populaires
+    path('populars/', views.PopularBooksViewSet.as_view({'get': 'list'}), name='popular_books'),
 
     # Catégories
     path('categorie/', views.CategorieViewSet.as_view({'get': 'list', 'post': 'post'}), name="list_categorie"),
     re_path(r'^categorie/(?P<id>\d+)$', views.CategorieDetailViewSet.as_view({'get': 'retrieve', 'put': 'put', 'post': 'put', 'delete': 'delete'}), name="detail_categorie"),
 
     # Utilisateurs
-    path('utilisateur/', views.UtilisateurViewSet.as_view({'get': 'list', 'post': 'post'}), name='list_users'),
+    re_path(r'^utilisateur/$', views.UtilisateurViewSet.as_view({'get': 'list', 'post': 'post'}), name='list_users'),
+    re_path(r'^utilisateur/info/$', views.UserInfo.as_view({'get': 'list',}), name='user_info'),
     re_path(r'^utilisateur/(?P<id>\d+)/', views.UtilisateurDetailViewSet.as_view({'get': 'retrieve', 'post': 'put', 'put': 'put', 'delete': 'delete'}), name='detail_user'),
 
     # liste des livres d'un utilisateurs
@@ -38,7 +42,7 @@ urlpatterns = [
 
     # Téléchargements
     path('telecharge/', views.TelechargeListViewSet.as_view({'get': 'list'}), name='list_telecharge'),
-    re_path(r'^(?P<id_book>\d+)/telecharge/$', views.TelechargeCreateViewSet.as_view({'post': 'post'}), name='create_telecharge'),
+    re_path(r'^(?P<id_book>\d+)/telecharge/$', views.TelechargeCreateViewSet.as_view({'post': 'post', 'delete': 'delete'}), name='create_telecharge'),
 
 
 

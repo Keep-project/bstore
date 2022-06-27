@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.db.models import Q
+from django.db.models import Q, Avg
 import math
 import django
 import datetime
@@ -20,7 +20,7 @@ from .models import Books, Categorie, Utilisateur, Commentaire, \
 from .serializers import BooksSerializer, CategorieSerializer, \
     UtilisateurSerializer, CommentaireSerializer, PartageSerializer, \
     TelechargeSerializer, LikeSerializer, CategorieDetailSerializer, \
-        BooksDetailSerializer
+        BooksDetailSerializer, UtilisateurDetailsSerializer, UtilisateurDetailsSerializer
 
 
 
@@ -87,6 +87,7 @@ class CategorieDetailViewSet(viewsets.ViewSet):
 
 class BookListForUserViewSet(viewsets.GenericViewSet):
     authentication_classes = [JWTAuthentication]
+
     def list(self, request, *args, **kwargs):
         books = Books.objects.filter(proprietaire=request.user.id)   
         page = int(request.GET.get('page', 1))
@@ -116,14 +117,12 @@ class BookListForUserViewSet(viewsets.GenericViewSet):
             "results": serializer.data,
         })
 
-
 class FilterBookViewSet(viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         query = request.GET.get('query')
         books = Books.objects.filter( 
             Q(titre__icontains = query) |
-            Q(description__icontains = query) |
             Q(auteur__icontains = query) |
             Q(editeur__icontains = query) |
             Q(categorie__libelle__icontains = query) 
@@ -132,6 +131,23 @@ class FilterBookViewSet(viewsets.GenericViewSet):
         serializer = BooksSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
+class SimalarBooksViewSet(viewsets.ViewSet):
+    def list(self, request, *args, **kwargs):
+        query = request.GET.get('query')
+        author = request.GET.get('author')
+        books = Books.objects.filter(
+            Q(auteur__icontains = author) |
+            Q(categorie__libelle__icontains = query) 
+        )[ 0: 30]
+        serializer = BooksSerializer(books, many=True)
+        return Response({ 'success': True, 'status': status.HTTP_200_OK, 'message': 'Livres similaires', 'results': serializer.data}, status=status.HTTP_200_OK)
+
+class PopularBooksViewSet(viewsets.ViewSet):
+    def list(self, request, *args, **kwargs):
+        # popular_books = Books.objects.filter(like__gt = 2).order_by('-like').distinct('id')[0: 30]
+        popular_books = Books.objects.filter(like__gt = 40).order_by('like')[0: 10]
+        serializer = BooksSerializer(popular_books, many=True)
+        return Response({'success': True, 'message': 'Livres populaires', 'count': popular_books.count(),'results': serializer.data}, status =status.HTTP_200_OK,)
 
 class BookViewSet(viewsets.GenericViewSet):
     authentication_classes = [JWTAuthentication]
@@ -168,7 +184,7 @@ class BookViewSet(viewsets.GenericViewSet):
         return Response({'status': status.HTTP_400_BAD_REQUEST, 'results': serializer.errors }, status=status.HTTP_400_BAD_REQUEST)
 
 class BookDetailViewSet(viewsets.ViewSet):
-    authentication_classes = [JWTAuthentication]
+    
     def get_object(self, id):
         try:
             return Books.objects.get(id = id)
@@ -183,6 +199,7 @@ class BookDetailViewSet(viewsets.ViewSet):
             return False
 
     def retrieve(self, request, id=None, *args, **kw): 
+        authentication_classes = [JWTAuthentication]
         book = self.get_object(id)
         if book:
             serializer = BooksDetailSerializer(book)
@@ -237,8 +254,15 @@ class UtilisateurViewSet(viewsets.ViewSet):
 
         return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur de création de l\'utilisateur. Paramètres incomplèts !',} ,status=status.HTTP_400_BAD_REQUEST)
 
-class UtilisateurDetailViewSet(viewsets.ViewSet):
+class UserInfo(viewsets.ViewSet):
+    authentication_classes = [JWTAuthentication]
+    def list(self, request, *args, **kwargs):
+        user = Utilisateur.objects.get(id=self.request.user.id)
+        serializer = UtilisateurDetailsSerializer(user)
+        return Response({'status': status.HTTP_200_OK, 'message': 'Information de l\'utilisateur', 'results': serializer.data}, status=status.HTTP_200_OK)
 
+class UtilisateurDetailViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]
     def get_object(self, id):
         try:
             return Utilisateur.objects.get(id = id)
@@ -248,7 +272,7 @@ class UtilisateurDetailViewSet(viewsets.ViewSet):
     def retrieve(self, request, id=None, *args, **kw):  
         user = self.get_object(id)
         if user:
-            serializer = UtilisateurSerializer(user)
+            serializer = UtilisateurDetailsSerializer(user)
             return Response({'success': True, 'status': status.HTTP_200_OK, 'results': serializer.data })
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "L'utilisateur ayant l'id = {0} n'existe pas !".format(id)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -326,25 +350,34 @@ class LikesCreateViewSet(viewsets.ViewSet):
                 if old_like.is_like:
                     like = Like.objects.get(id=old_like.id)
                     like.delete()
-                    return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre disliker avec succès', 'results': new_like}, status=status.HTTP_201_CREATED)
+                    bs = BooksDetailSerializer(Books.objects.get(id=id_book))
+                    return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre disliker avec succès', 'is_like': False, 'results': bs.data}, status=status.HTTP_201_CREATED)
             except Like.DoesNotExist:
                 new_like = { 'utilisateur': request.user.id, 'book': id_book, 'is_like': True}
                 serializer = LikeSerializer(data=new_like)
 
             if serializer.is_valid():
                 serializer.save()
-                return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre liker avec succès', 'results': serializer.data}, status=status.HTTP_201_CREATED)
+                bs = BooksDetailSerializer(Books.objects.get(id=id_book))
+                return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre liker avec succès','is_like': True, 'results': bs.data}, status=status.HTTP_201_CREATED)
             return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': "Le livre avec l'id = {0} n'existe pas !".format(id_book), 'results': serializer.errors} ,status=status.HTTP_400_BAD_REQUEST)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Vous ne pouvez liker/disliker un livre inconnu !"}, status=status.HTTP_404_NOT_FOUND)
 
 class TelechargeListViewSet(viewsets.ViewSet):
     def list(self, request, *args, **kwargs):
-        telecharge = Telecharge.objects.all()
-        serializer = TelechargeSerializer(telecharge, many=True)
-        return Response({'success': True,'status': status.HTTP_200_OK, 'message':'Liste des téléchargements', 'telecharges': serializer.data}, status=status.HTTP_200_OK)
+        telecharges = Telecharge.objects.all()
+        serializer = TelechargeSerializer(telecharges, many=True)
+        return Response({'success': True,'status': status.HTTP_200_OK, 'message':'Liste des téléchargements', 'count': telecharges.count(), 'telecharges': serializer.data}, status=status.HTTP_200_OK)
 
 class TelechargeCreateViewSet(viewsets.ViewSet):
-    authentication_classes = [JWTAuthentication]    
+    authentication_classes = [JWTAuthentication]
+
+    def get_object(self, id):
+        try:
+            return Telecharge.objects.get(id = id)
+        except Telecharge.DoesNotExist:
+            return False
+
     def post(self, request, id_book=None, *args, **kwargs):
         if id_book != None:
             request.data['book'] = int(id_book)
@@ -355,6 +388,14 @@ class TelechargeCreateViewSet(viewsets.ViewSet):
                 return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre téléchargé avec succès', 'results': serializer.data}, status=status.HTTP_201_CREATED)
             return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur lors du téléchargement. Paramètres incomplèts !', 'results': serializer.errors} ,status=status.HTTP_400_BAD_REQUEST)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Vous ne pouvez télécharger un livre inconnu !"}, status=status.HTTP_404_NOT_FOUND)
+
+
+    def delete(self, request, id_book=None, *args, **kwargs):
+        book = self.get_object(id_book)
+        if book:
+            book.delete()
+            return Response({"succes": False, "status": status.HTTP_204_NO_CONTENT, "message": "Télécharge supprimé avec succès!"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Télécharge ayant l'id = {0} n'existe pas !".format(id_book)}, status=status.HTTP_404_NOT_FOUND)
 
 
 
