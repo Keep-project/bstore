@@ -20,7 +20,7 @@ urlpatterns = [
     # liste des livres d'un utilisateurs
     path('utilisateur/me/', views.BookListForUserViewSet.as_view({'get': 'list',}), name='book_list_user'),
     re_path(r'^filter/$', views.FilterBookViewSet.as_view({'get': 'list',}), name='book_filter_list'),
-
+ 
 
     # Commentaires
     path('commentaire/', views.CommentaireListViewSet.as_view({'get': 'list'}), name='list_comment'),
