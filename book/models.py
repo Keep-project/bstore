@@ -9,7 +9,8 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 
-BASE_URL = 'http://192.168.220.1:8000'
+BASE_URL = 'http://192.168.43.100:8000'
+# BASE_URL = 'http://192.168.220.1:8000'
 
 class Utilisateur(User):
     avatar=models.FileField(upload_to='avatar/', blank=True, null=True)
