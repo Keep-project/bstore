@@ -184,6 +184,7 @@ class BookViewSet(viewsets.GenericViewSet):
         return Response({'status': status.HTTP_400_BAD_REQUEST, 'results': serializer.errors }, status=status.HTTP_400_BAD_REQUEST)
 
 class BookDetailViewSet(viewsets.ViewSet):
+    authentication_classes = [JWTAuthentication]
     
     def get_object(self, id):
         try:
@@ -210,10 +211,13 @@ class BookDetailViewSet(viewsets.ViewSet):
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Le livre ayant l'id = {0} n'existe pas !".format(id)}, status=status.HTTP_404_NOT_FOUND)    
 
     def put(self, request, id=None, *args, **kwargs):
+        print(request.data.get('extension'))
         book = self.get_object(id)
         if book:
             serializer = BooksSerializer(book, data=request.data)
             if serializer.is_valid():
+                if request.data.get('extension'):
+                    serializer.save()
                 serializer.save()
                 return Response({"succes": True, "status": status.HTTP_201_CREATED, "results": serializer.data}, status=status.HTTP_201_CREATED)
             return Response({"succes": False, "status": status.HTTP_400_BAD_REQUEST, "message": "Erreur de mise à jour du livre"}, status=status.HTTP_400_BAD_REQUEST)
