@@ -31,7 +31,7 @@ from .serializers import BooksSerializer, CategorieSerializer, \
 from .paginations import CustomPagination
 # Create your views here.
 
-BASE_URL = 'http://127.0.0.1:8000'
+BASE_URL = 'http://192.168.43.100:8000'
 
 
 class CategorieViewSet(viewsets.ViewSet):
