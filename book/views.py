@@ -81,7 +81,7 @@ class CategorieDetailViewSet(viewsets.ViewSet):
     def delete(self, request, id=None, *args, **kwargs):
         categorie = self.get_object(id)
         if categorie:
-            categorie.delete()
+            categorie.delete() 
             return Response({"succes": False, "status": status.HTTP_204_NO_CONTENT, "message": "Catégorie supprimé avec succès!"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "La catégorie ayant l'id = {0} n'existe pas !".format(id)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -132,12 +132,12 @@ class FilterBookViewSet(viewsets.GenericViewSet):
         return self.get_paginated_response(serializer.data)
 
 class SimalarBooksViewSet(viewsets.ViewSet):
-    def list(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs): 
         query = request.GET.get('query')
         author = request.GET.get('author')
         books = Books.objects.filter(
             Q(auteur__icontains = author) |
-            Q(categorie__libelle__icontains = query) 
+            Q(categorie__id__icontains = query) 
         )[ 0: 30]
         serializer = BooksSerializer(books, many=True)
         return Response({ 'success': True, 'status': status.HTTP_200_OK, 'message': 'Livres similaires', 'results': serializer.data}, status=status.HTTP_200_OK)

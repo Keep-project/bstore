@@ -50,6 +50,7 @@ class BooksSerializer(serializers.ModelSerializer):
             'datepub',
             'created_at',
             'updated_at',
+
         )
 
 class CategorieSerializer(serializers.ModelSerializer):
