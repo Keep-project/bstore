@@ -1,19 +1,20 @@
 
+
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
 
-# from io import BytesIO
-# from PIL import Image
-
 # Create your models here.
 
-
 BASE_URL = 'http://192.168.43.100:8000'
-# BASE_URL = 'http://192.168.220.1:8000'
+
+# BASE_URL =  'https://bstore-backend.herokuapp.com'
 
 class Utilisateur(User):
-    avatar=models.FileField(upload_to='avatar/', blank=True, null=True)
+
+    avatar=models.FileField(upload_to='avatars/', blank=True, null=True)
+    created_at =models.DateTimeField(auto_now_add=True)
+    updated_at =models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "{0}".format(self.username)
@@ -50,15 +51,15 @@ class Books(models.Model):
     titre= models.CharField(max_length=255, null=False)
     description= models.TextField()
     nbpages= models.IntegerField(null=False, blank=False)
-    image= models.FileField(upload_to='couverture/', blank=False, null=False)
+    image= models.FileField(upload_to='couvertures/', blank=True, null=True)
     extension= models.CharField(max_length=50, default='pdf',)
-    fichier = models.FileField(upload_to='documents/', blank=True)
+    fichier = models.FileField(upload_to='documents/', blank=True, null=True)
     proprietaire = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, null=True, blank=True)
     langue= models.CharField(max_length=10)
     auteur= models.CharField(max_length=50)
     editeur= models.CharField(max_length=50)
     categorie=models.ForeignKey(Categorie, related_name="books", on_delete=models.CASCADE)
-    datepub= models.DateTimeField(null=True)
+    datepub= models.CharField( max_length=50, null=True, default="10/03/2022 00:00:00.0")
     created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
 
@@ -74,7 +75,7 @@ class Books(models.Model):
     def get_image_url(self):
         if self.image:
             return  BASE_URL + self.image.url
-        return BASE_URL + "/media/couverture/bstore-logo.png"
+        return BASE_URL + "/media/couvertures/bstore-logo.png"
     
     def get_fichier_url(self):
         if self.fichier:
@@ -105,10 +106,6 @@ class Like(models.Model):
     is_like= models.BooleanField(default=False)
     created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
-
-
-    # def get_nombre(self):
-    #     return self.
 
 class Commentaire(models.Model):
     utilisateur=models.ForeignKey(Utilisateur,  on_delete=models.CASCADE)
@@ -144,6 +141,3 @@ class Telecharge(models.Model):
 
     class Meta:
         ordering=('-created_at',)
-
-        
-
