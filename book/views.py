@@ -9,6 +9,7 @@ from django.db.models import Q, Avg
 import math
 import django
 import datetime
+import os
 
 # Importation des models
 from .models import Books, Categorie, Utilisateur, Commentaire, \
@@ -29,6 +30,7 @@ from .serializers import BooksSerializer, CategorieSerializer, \
 from .paginations import CustomPagination
 # Create your views here.
 
+# BASE_URL = 'http://127.0.0.1:8000'
 BASE_URL = 'http://192.168.43.100:8000'
 
 
@@ -110,6 +112,7 @@ class BookListForUserViewSet(viewsets.GenericViewSet):
             # 'pages': page_number,
             # 'start': start,
             # 'end': end,
+            
             'next': next,
             'previous': previous,
             "results": serializer.data,
@@ -162,27 +165,26 @@ class BookViewSet(viewsets.GenericViewSet):
         categorie = Categorie.objects.get(id=request.data.get('categorie'))
         if serializer.is_valid():
             livre = Books(
-                titre= request.data.get('titre'),
-                description= request.data.get('description'),
-                proprietaire= request.data.get('proprietaire'),
-                nbpages= request.data.get('nbpages'),
-                langue= request.data.get('langue'),
-                image= request.FILES.get('image'),
-                extension= request.data.get('extension'),
-                auteur= request.data.get('auteur'),
-                editeur= request.data.get('editeur'),
+                titre = request.data.get('titre'),
+                description = request.data.get('description'),
+                proprietaire = request.data.get('proprietaire'),
+                nbpages = request.data.get('nbpages'),
+                langue = request.data.get('langue'),
+                image = request.FILES.get('image') if request.FILES.get('image') else "",
+                extension = request.data.get('extension'),
+                auteur = request.data.get('auteur'),
+                editeur = request.data.get('editeur'),
                 categorie = categorie,
-                fichier= request.data.get("fichier"),
-                datepub= request.data.get('datepub') if request.data.get('datepub') else datetime.datetime.now()
+                fichier = request.data.get("fichier"),
+                datepub =  request.data.get('datepub') if request.data.get('datepub') else "",
             )
-
             livre.save()
             serializer = BooksSerializer(livre)
             return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Livre créé avec succès','results': serializer.data}, status=status.HTTP_200_OK)
         return Response({'status': status.HTTP_400_BAD_REQUEST, 'results': serializer.errors }, status=status.HTTP_400_BAD_REQUEST)
 
 class BookDetailViewSet(viewsets.ViewSet):
-    
+    authentication_classes = [JWTAuthentication]
     def get_object(self, id):
         try:
             return Books.objects.get(id = id)
@@ -197,7 +199,6 @@ class BookDetailViewSet(viewsets.ViewSet):
             return False
 
     def retrieve(self, request, id=None, *args, **kw): 
-        authentication_classes = [JWTAuthentication]
         book = self.get_object(id)
         if book:
             serializer = BooksDetailSerializer(book)
@@ -212,7 +213,17 @@ class BookDetailViewSet(viewsets.ViewSet):
         if book:
             serializer = BooksSerializer(book, data=request.data)
             if serializer.is_valid():
-                serializer.save()
+                if request.FILES.get('image'):
+                    if book.image:
+                        os.remove("{0}/{1}".format(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), book.image.url))
+                    serializer.save(image=request.FILES.get('image'))
+                else:
+                    categorie = Categorie.objects.get(id = request.data.get('categorie'))
+                    if categorie:
+                        serializer.save(categorie=categorie)
+                    else:
+                        serializer.save()
+
                 return Response({"succes": True, "status": status.HTTP_201_CREATED, "results": serializer.data}, status=status.HTTP_201_CREATED)
             return Response({"succes": False, "status": status.HTTP_400_BAD_REQUEST, "message": "Erreur de mise à jour du livre"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Le livre ayant l'id = {0} n'existe pas !".format(id)}, status=status.HTTP_404_NOT_FOUND)
@@ -250,7 +261,7 @@ class UtilisateurViewSet(viewsets.ViewSet):
             serializer = UtilisateurSerializer(user)
             return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Utilisateur enrégistré avec succès', 'results': serializer.data}, status=status.HTTP_201_CREATED)
 
-        return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur de création de l\'utilisateur. Paramètres incomplèts !',} ,status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Le champ nom doit avoir au moins 4 caractères et le mot de passe au moins 8 caractères'} ,status=status.HTTP_400_BAD_REQUEST)
 
 class UserInfo(viewsets.ViewSet):
     authentication_classes = [JWTAuthentication]
@@ -279,8 +290,12 @@ class UtilisateurDetailViewSet(viewsets.ViewSet):
         if user:
             serializer = UtilisateurSerializer(user, data=request.data)
             if serializer.is_valid():
-                serializer.save()
-                return Response({"succes": True, "status": status.HTTP_201_CREATED, "user": serializer.data}, status=status.HTTP_201_CREATED)
+                if request.FILES.get('avatar'):
+                    if user.avatar:
+                        os.remove("{0}/{1}".format(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), user.avatar.url))
+                    serializer.save(avatar = request.FILES.get('avatar'), is_staff= True, is_active= True)
+                else: serializer.save(is_staff=True, is_active=True)
+                return Response({"success": True, "status": status.HTTP_201_CREATED, "message": "Mise à jour effectuée", "results": serializer.data}, status=status.HTTP_201_CREATED)
             return Response({"succes": False, "status": status.HTTP_400_BAD_REQUEST, "message": "Erreur de mise à jour de l'utilisateur"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "L'utilisateur ayant l'id = {0} n'existe pas !".format(id)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -306,7 +321,12 @@ class CommentaireCreateViewSet(viewsets.ViewSet):
             request.data['utilisateur'] = request.user.id
             serializer = CommentaireSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
+                commentaire = Commentaire.objects.create(
+                    book= Books.objects.get(id=int(id_book)),
+                    utilisateur= Utilisateur.objects.get(id = request.user.id),
+                    contenu = request.data.get('contenu'),
+                )
+                commentaire.save()
                 return Response({'status': status.HTTP_201_CREATED, 'success': True, 'message': 'Commentaire enrégistré avec succès', 'results': serializer.data}, status=status.HTTP_201_CREATED)
             return Response({'status': status.HTTP_400_BAD_REQUEST, 'success': False, 'message': 'Erreur de création du commentaire. Paramètres incomplèts !', 'results': serializer.errors} ,status=status.HTTP_400_BAD_REQUEST)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Vous ne pouvez faire un commentaire sur un livre inconnu !"}, status=status.HTTP_404_NOT_FOUND)
@@ -394,6 +414,4 @@ class TelechargeCreateViewSet(viewsets.ViewSet):
             book.delete()
             return Response({"succes": False, "status": status.HTTP_204_NO_CONTENT, "message": "Télécharge supprimé avec succès!"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"succes": False, "status": status.HTTP_404_NOT_FOUND, "message": "Télécharge ayant l'id = {0} n'existe pas !".format(id_book)}, status=status.HTTP_404_NOT_FOUND)
-
-
 
