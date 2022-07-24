@@ -44,6 +44,4 @@ urlpatterns = [
     path('telecharge/', views.TelechargeListViewSet.as_view({'get': 'list'}), name='list_telecharge'),
     re_path(r'^(?P<id_book>\d+)/telecharge/$', views.TelechargeCreateViewSet.as_view({'post': 'post', 'delete': 'delete'}), name='create_telecharge'),
 
-
-
 ]
