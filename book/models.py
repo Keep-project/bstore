@@ -22,7 +22,7 @@ class Utilisateur(User):
     def get_avatar_url(self):
         if self.avatar:
             return  BASE_URL + self.avatar.url
-        return BASE_URL + "/media/avatar/photo_2022-05-13_16-56-12_d9wjxh1.jpg"
+        return BASE_URL + "/media/avatars/photo_2022-05-13_16-56-12_d9wjxh1.jpg"
 
 
     def get_liked_books(self):
