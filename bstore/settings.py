@@ -92,14 +92,12 @@ WSGI_APPLICATION = 'bstore.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bstore',
-        'USER': 'jenifer',
-        'PASSWORD': 'jenifer',
+        'NAME': 'testlibrairie',
+        'USER': 'patrick',
+        'PASSWORD': 'patrick',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
-    
-    
 }
 
 
@@ -146,9 +144,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, 'static'),
+# )
 
 
 # Default primary key field type

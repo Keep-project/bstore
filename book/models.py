@@ -3,17 +3,20 @@
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
+from book.managers import QueryManager
 
 # Create your models here.
 
-BASE_URL = 'http://192.168.43.100:8000'
+# BASE_URL = 'http://192.168.43.100:8000'
+BASE_URL = 'http://192.168.220.1:8000'
 
 # BASE_URL =  'https://bstore-backend.herokuapp.com'
 
+
 class Utilisateur(User):
 
-    avatar=models.FileField(upload_to='avatars/', blank=True, null=True)
-    created_at =models.DateTimeField(auto_now_add=True)
+    avatar = models.FileField(upload_to='avatars/', blank=True, null=True)
+    # created_at =models.DateTimeField(auto_now_add=True)
     updated_at =models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -21,17 +24,16 @@ class Utilisateur(User):
     
     def get_avatar_url(self):
         if self.avatar:
-            return  BASE_URL + self.avatar.url
+            return BASE_URL + self.avatar.url
         return BASE_URL + "/media/avatar/photo_2022-05-13_16-56-12_d9wjxh1.jpg"
 
-
     def get_liked_books(self):
-        likes = Like.objects.filter(utilisateur = self.id)
+        likes = Like.objects.filter(utilisateur=self.id)
         ids = [like.book_id for like in likes]
         return Books.objects.filter(id__in=ids)
     
     def get_downloads_books(self):
-        downloads = Telecharge.objects.filter(utilisateur__id = self.id)
+        downloads = Telecharge.objects.filter(utilisateur__id=self.id)
         ids = [download.book_id for download in downloads]
         return Books.objects.filter(id__in=ids)
 
@@ -48,6 +50,11 @@ class Categorie(models.Model):
 
 class Books(models.Model):
     
+    choices = (
+        (0, 'brouillon'),
+        (1, 'soumis à publication'),
+        (2, 'publié')
+    )
     titre= models.CharField(max_length=255, null=False)
     description= models.TextField()
     nbpages= models.IntegerField(null=False, blank=False)
@@ -58,6 +65,7 @@ class Books(models.Model):
     langue= models.CharField(max_length=10)
     auteur= models.CharField(max_length=50)
     editeur= models.CharField(max_length=50)
+    etat= models.IntegerField(choices=choices, default=1)
     categorie=models.ForeignKey(Categorie, related_name="books", on_delete=models.CASCADE)
     datepub= models.CharField( max_length=50, null=True, default="10/03/2022 00:00:00.0")
     created_at =models.DateTimeField(auto_now_add=True)
@@ -99,6 +107,9 @@ class Books(models.Model):
 
     def get_categorie(self):
         return self.categorie.libelle
+
+    def published(self):
+        Books.objects.filter(etat=2)
 
 class Like(models.Model):
     utilisateur=models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
