@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-+!%sf0u-$^&9os#llxn@f-1gtjii)7t&i58g#y#@*ipi7-1%oa
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', '192.168.100.104', '192.168.43.60','192.168.220.1', '192.168.43.100'] 
+ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', '192.168.43.232', '192.168.43.60','192.168.220.1', '192.168.43.100'] 
 
 
 
@@ -51,7 +51,8 @@ INSTALLED_APPS = [
 
 CORS_ALLOW_ORIGINS = [
     "http://192.168.220.1:8000",
-    'http://192.168.43.100:8000'
+    'http://192.168.43.100:8000',
+    'http://192.168.43.232:8000'
 ]
 
 MIDDLEWARE = [
@@ -92,7 +93,7 @@ WSGI_APPLICATION = 'bstore.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'testlibrairie',
+        'NAME': 'librairie',
         'USER': 'patrick',
         'PASSWORD': 'patrick',
         'HOST': '127.0.0.1',

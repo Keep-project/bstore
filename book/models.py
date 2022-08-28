@@ -7,8 +7,8 @@ from book.managers import QueryManager
 
 # Create your models here.
 
-# BASE_URL = 'http://192.168.43.100:8000'
-BASE_URL = 'http://192.168.220.1:8000'
+BASE_URL = 'http://192.168.43.232:8000'
+# BASE_URL = 'http://192.168.220.1:8000'
 
 # BASE_URL =  'https://bstore-backend.herokuapp.com'
 
